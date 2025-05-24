@@ -8,13 +8,13 @@
 #include <limits>
         using namespace std;
 
-    // cấu trúc Food/Drink Item
+    // Structure for Food/Drink Item
     struct FoodItem {
         string name;
         float price;
         };
 
-    // cấu trúc RentalRecord
+    // Structure for RentalRecord
     struct RentalRecord {
         string boatID;
         string ticketCode;
@@ -25,7 +25,7 @@
         float foodCost;
     };
 
-    // cấu trúc Shift
+    // Structure for Shift
     struct Shift {
         int startHour;
         int endHour;
@@ -69,7 +69,7 @@
         void loadFromFile(ifstream& inFile);
     };
 
-    // mấy hàm tiện ích, rút ngắn code
+    // Helper Functions
     void displayHeader() {
         cout << "\n\t\t======================================";
         cout << "\n\t\t    BOAT RENTAL MANAGEMENT SYSTEM    ";
@@ -133,7 +133,7 @@
         return ticket;
     }
 
-    // hàm trong class Boat
+    // Boat Member Functions
     void Boat::createBoat() {
         system("cls");
         displayHeader();
@@ -209,10 +209,10 @@
             while (!validShift) {
                 cout << "\t\tEnter shift " << i + 1 << " details:\n";
                 do {
-                    cout << "\t\tStart time (0-23): ";
+                    cout << "\t\tStart time (0-22): ";
                     cin >> input;
-                    if (!isValidNumber(input) || stoi(input) < 0 || stoi(input) > 23) {
-                        cout << "\t\tError: Start time must be 0-23.\n";
+                    if (!isValidNumber(input) || stoi(input) < 0 || stoi(input) > 22) {
+                        cout << "\t\tError: Start time must be 0-22.\n";
                     }
                     else {
                         timeTrips[i].startHour = stoi(input);
@@ -221,10 +221,10 @@
                 } while (true);
 
                 do {
-                    cout << "\t\tEnd time (0-23): ";
+                    cout << "\t\tEnd time (1-23): ";
                     cin >> input;
                     if (!isValidNumber(input) || stoi(input) <= timeTrips[i].startHour || stoi(input) > 23) {
-                        cout << "\t\tError: End time must be after start time and 0-23.\n";
+                        cout << "\t\tError: End time must be after start time and 1-23.\n";
                     }
                     else {
                         timeTrips[i].endHour = stoi(input);
@@ -333,7 +333,7 @@
         inFile.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 
-    // Class BoatManager
+    // BoatManager Class
     class BoatManager {
         vector<Boat> boats;
         vector<RentalRecord> rentalHistory;
