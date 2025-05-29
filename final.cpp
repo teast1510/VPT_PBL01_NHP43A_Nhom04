@@ -120,7 +120,7 @@ public:
         } while (true);
 
         do {
-            cout << "\t\tNhập so ca lam viec: ";
+            cout << "\t\tNhap so ca lam viec: ";
             cin >> input;
             if (!isValidNumber(input) || stoi(input) <= 0) {
                 cout << "\t\tLoi. so ca lam viec phai la so duong.\n";
