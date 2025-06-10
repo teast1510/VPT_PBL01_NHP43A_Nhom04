@@ -48,7 +48,7 @@ bool isValidNumber(const string& str) {
     }
 }
 
-// Lớp cơ sở trừu tượng Boat
+// Lớp Boat
 class Boat {
 protected:
     string boatID;
@@ -65,13 +65,12 @@ public:
     Boat() : isAvailable(true), rentalCount(0), seats(0), numShifts(0), type(' ') {}
     virtual ~Boat() {}
 
-    // Hàm ảo thuần túy cho đa hình
     virtual void display() const = 0;
 
     char getType() const { return type; }
     void setType(char t) { type = t; }
 
-    void createBoat() {
+   virtual void createBoat() {    // hàm tạo thuyền
         system("cls");
         cout << "\n\t\t======================================";
         cout << "\n\t\t           TAO THUYEN MOI    ";
@@ -191,17 +190,17 @@ public:
         }
     }
 
-    void setAvailability(bool available) { isAvailable = available; }
-    bool getAvailability() const { return isAvailable; }
-    float getSeats() const { return seats; }
-    string getBoatName() const { return boatName; }
-    string getBoatID() const { return boatID; }
-    int getRentalCount() const { return rentalCount; }
-    void incrementRentalCount() { rentalCount++; }
-    const vector<Shift>& getShifts() const { return shifts; }
-    int getNumShifts() const { return numShifts; }
+    void setAvailability(bool available) { isAvailable = available; }       // hàm đặt giá trị hoạt động 
+    bool getAvailability() const { return isAvailable; }                    // hàm trả về giá trị hoạt động
+    float getSeats() const { return seats; }                                // hàm trả về giá trị số ghế của thuyền
+    string getBoatName() const { return boatName; }                         // hàm trả về tên thuyền
+    string getBoatID() const { return boatID; }                             // hàm trẻ về ID thuyền
+    int getRentalCount() const { return rentalCount; }                      // hàm trả về số lần đã thuê
+    void incrementRentalCount() { rentalCount++; }                          // hàm tăng số lần thuê
+    const vector<Shift>& getShifts() const { return shifts; }               // hàm trả về mảng các thông số của các ca trực của thuyền
+    int getNumShifts() const { return numShifts; }                          // hàm trả về số ca trực 
 
-    void bookSeats(int shiftIndex, float seatsBooked) {
+    void bookSeats(int shiftIndex, float seatsBooked) {        // hàm đặt ghế
         if (shiftIndex >= 0 && shiftIndex < numShifts) {
             shifts[shiftIndex].seatsBooked += seatsBooked;
             incrementRentalCount();
@@ -234,7 +233,7 @@ public:
         }
     }
 
-    void saveToFile(ofstream& outFile) const {
+    void saveToFile(ofstream& outFile) const {        // hàm lưu vào file
         outFile << boatID << "\n";
         outFile << boatName << "\n";
         outFile << type << "\n";
@@ -249,7 +248,7 @@ public:
         outFile << rentalCount << "\n";
     }
 
-    void loadFromFile(ifstream& inFile) {
+    void loadFromFile(ifstream& inFile) {            // hàm tải giá trị từ file lên 
         getline(inFile, boatID);
         getline(inFile, boatName);
         inFile >> type >> weight >> isAvailable >> seats >> numShifts;
@@ -269,7 +268,127 @@ public:
 class SmallBoat : public Boat {
 public:
     SmallBoat() { setType('S'); }
-    void display() const override {
+void createBoat() override {                // đa hình cho hàm tạo thuyền, phân biệt giữa Small và Large Boat, tương tự đa hình cho display
+    system("cls");
+    cout << "\n\t\t======================================";
+    cout << "\n\t\t           TAO THUYEN NHO    ";
+    cout << "\n\t\t======================================\n";
+    
+    do{
+        cout << "\t\tNhap ID thuyen ( Vi du: B001): ";
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        getline(cin, boatID);
+        if (boatID.empty() || boatID.length() > 10) {
+            cout << "ID cua thuyen khong duoc de trong va phai nho hon 10 ky tu. \n";
+        }
+    } while (boatID.empty() || boatID.length() > 10);
+
+    do {
+        cout << "\t\tNhap ten thuyen: ";
+        getline(cin, boatName);
+        if (boatName.empty()) {
+            cout << "\t\tLoi. Ten thuyen khong duoc de trong.\n";
+        }
+    } while (boatName.empty());
+    
+    string input;
+    do {
+        cout << "\t\tNhap trong luong cua thuyen (tan, toi da 50): ";
+        cin >> input;
+        if (!isValidNumber(input) || stof(input) <= 0 || stof(input) >= 50) {
+            cout << "\t\tLoi. Trong luong cua thuyen phai la so duong va nho hon 50 tan.\n";
+        }
+        else {
+            weight = stof(input);
+            break;
+        }
+    } while (true);
+
+    do {
+        cout << "\t\tNhap so ghe (toi da 100): ";
+        cin >> input;
+        if (!isValidNumber(input) || stof(input) <= 0 || stof(input) >= 100) {
+            cout << "\t\tLoi. So ghe phai la so duong va nho hon 100.\n";
+        }
+        else {
+            seats = stof(input);
+            break;
+        }
+    } while (true);
+
+    do {
+        cout << "\t\tNhap so ca lam viec: ";
+        cin >> input;
+        if (!isValidNumber(input) || stoi(input) <= 0) {
+            cout << "\t\tLoi. So ca lam viec phai la so duong.\n";
+        }
+        else if (stoi(input) >= 12) {
+            cout << "\t\tLoi: So ca phai nho hon 12.\n";
+        }
+        else {
+            numShifts = stoi(input);
+            break;
+        }
+    } while (true);
+
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    shifts.resize(numShifts);
+
+    for (int i = 0; i < numShifts; i++) {
+        bool validShift = false;
+        while (!validShift) {
+            cout << "\t\tNhap chi tiet ca " << i + 1 << ":\n";
+            do {
+                cout << "\t\tGio bat dau (0-22): ";
+                cin >> input;
+                if (!isValidNumber(input) || stoi(input) < 0 || stoi(input) > 22) {
+                    cout << "\t\tLoi. Gio bat dau phai trong khoang 0-22.\n";
+                }
+                else {
+                    shifts[i].startHour = stoi(input);
+                    break;
+                }
+            } while (true);
+
+            do {
+                cout << "\t\tGio ket thuc (1-23): ";
+                cin >> input;
+                if (!isValidNumber(input) || stoi(input) <= shifts[i].startHour || stoi(input) > 23) {
+                    cout << "\t\tLoi. Gio ket thuc phai sau gio bat dau va trong khoang 1-23.\n";
+                }
+                else {
+                    shifts[i].endHour = stoi(input);
+                    break;
+                }
+            } while (true);
+
+            validShift = true;
+            for (int j = 0; j < i; j++) {
+                if (shifts[i].startHour < shifts[j].endHour && shifts[i].endHour > shifts[j].startHour) {
+                    cout << "\t\tLoi. Ca nay trung voi ca " << j + 1 << ".\n";
+                    validShift = false;
+                    break;
+                }
+            }
+
+            if (validShift) {
+                do {
+                    cout << "\t\tGia cho moi gio: ";
+                    cin >> input;
+                    if (!isValidNumber(input) || stof(input) <= 0) {
+                        cout << "\t\tLoi. Gia phai la so duong.\n";
+                    }
+                    else {
+                        shifts[i].pricePerHour = stof(input);
+                        break;
+                    }
+                } while (true);
+            }
+        }
+    }
+    cout << "\n\t\tThuyen nho duoc them thanh cong.\n";
+}
+    void display() const override {            // áp dụng đa hình (ghi đè) cho 2 loại Small và Large
         cout << "\t\tID Thuyen: " << boatID <<"\n";
         cout << "\t\tTen: " << boatName << "\n";
         cout << "\t\tLoai: Nho\n";
@@ -290,6 +409,126 @@ public:
 class LargeBoat : public Boat {
 public:
     LargeBoat() { setType('L'); }
+ void createBoat() override {
+     system("cls");
+     cout << "\n\t\t======================================";
+     cout << "\n\t\t           TAO THUYEN LON    ";
+     cout << "\n\t\t======================================\n";
+
+     do {
+         cout << "\t\tNhap ID thuyen ( Vi du: B001): ";
+         cin.ignore(numeric_limits<streamsize>::max(), '\n');
+         getline(cin, boatID);
+         if (boatID.empty() || boatID.length() > 10) {
+             cout << "ID cua thuyen khong duoc de trong va phai nho hon 10 ky tu. \n";
+         }
+     } while (boatID.empty() || boatID.length() > 10);
+
+     do {
+         cout << "\t\tNhap ten thuyen: ";
+         getline(cin, boatName);
+         if (boatName.empty()) {
+             cout << "\t\tLoi. Ten thuyen khong duoc de trong.\n";
+         }
+     } while (boatName.empty());
+
+     string input;
+     do {
+         cout << "\t\tNhap trong luong cua thuyen (tan, toi thieu 50): ";
+         cin >> input;
+         if (!isValidNumber(input) || stof(input) <= 50) {
+             cout << "\t\tLoi. Trong luong cua thuyen phai la so duong va lon hon 50 tan.\n";
+         }
+         else {
+             weight = stof(input);
+             break;
+         }
+     } while (true);
+
+     do {
+         cout << "\t\tNhap so ghe (toi thieu 100): ";
+         cin >> input;
+         if (!isValidNumber(input) || stof(input) <= 100) {
+             cout << "\t\tLoi. So ghe phai la so duong va lon 100.\n";
+         }
+         else {
+             seats = stof(input);
+             break;
+         }
+     } while (true);
+
+     do {
+         cout << "\t\tNhap so ca lam viec: ";
+         cin >> input;
+         if (!isValidNumber(input) || stoi(input) <= 0) {
+             cout << "\t\tLoi. So ca lam viec phai la so duong.\n";
+         }
+         else if (stoi(input) >= 12) {
+             cout << "\t\tLoi: So ca phai nho hon 12.\n";
+         }
+         else {
+             numShifts = stoi(input);
+             break;
+         }
+     } while (true);
+
+     cin.ignore(numeric_limits<streamsize>::max(), '\n');
+     shifts.resize(numShifts);
+
+     for (int i = 0; i < numShifts; i++) {
+         bool validShift = false;
+         while (!validShift) {
+             cout << "\t\tNhap chi tiet ca " << i + 1 << ":\n";
+             do {
+                 cout << "\t\tGio bat dau (0-22): ";
+                 cin >> input;
+                 if (!isValidNumber(input) || stoi(input) < 0 || stoi(input) > 22) {
+                     cout << "\t\tLoi. Gio bat dau phai trong khoang 0-22.\n";
+                 }
+                 else {
+                     shifts[i].startHour = stoi(input);
+                     break;
+                 }
+             } while (true);
+
+             do {
+                 cout << "\t\tGio ket thuc (1-23): ";
+                 cin >> input;
+                 if (!isValidNumber(input) || stoi(input) <= shifts[i].startHour || stoi(input) > 23) {
+                     cout << "\t\tLoi. Gio ket thuc phai sau gio bat dau va trong khoang 1-23.\n";
+                 }
+                 else {
+                     shifts[i].endHour = stoi(input);
+                     break;
+                 }
+             } while (true);
+
+             validShift = true;
+             for (int j = 0; j < i; j++) {
+                 if (shifts[i].startHour < shifts[j].endHour && shifts[i].endHour > shifts[j].startHour) {
+                     cout << "\t\tLoi. Ca nay trung voi ca " << j + 1 << ".\n";
+                     validShift = false;
+                     break;
+                 }
+             }
+
+             if (validShift) {
+                 do {
+                     cout << "\t\tGia cho moi gio: ";
+                     cin >> input;
+                     if (!isValidNumber(input) || stof(input) <= 0) {
+                         cout << "\t\tLoi. Gia phai la so duong.\n";
+                     }
+                     else {
+                         shifts[i].pricePerHour = stof(input);
+                         break;
+                     }
+                 } while (true);
+             }
+         }
+     }
+     cout << "\n\t\tThuyen lon duoc them thanh cong.\n";
+ }
     void display() const override {
         cout << "\t\tID Thuyen: " << boatID << "\n";
         cout << "\t\tTen: " << boatName << "\n";
@@ -307,28 +546,28 @@ public:
     }
 };
 
-// Hàm hỗ trợ
-void displayHeader() {
+// Các hàm hỗ trợ
+void displayHeader() {        // Hàm hiển thị tên chương trình
     cout << "\n\t\t======================================";
     cout << "\n\t\t  He Thong Quan Ly Tau THuyen Tren Song Han  ";
     cout << "\n\t\t======================================\n";
 }
 
-bool isValidBoatType(char type) {
+bool isValidBoatType(char type) {        //hàm kiểm tra tính đúng sai của biến Type
     return type == 'S' || type == 'L';
 }
 
-void pressEnterToContinue() {
+void pressEnterToContinue() {            // delay cho tới khi người dùng enter
     cout << "\n\t\tNhan Enter de tiep tuc...";
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
     cin.get();
 }
-void pressEnterToContinue2() {
+void pressEnterToContinue2() {           // cùng tác dụng nhưng dùng cho các hàm bị lỗi phải nhấn enter 2 lần
     cout << "\n\t\tNhan Enter de tiep tuc...";
     cin.get();
 }
 
-void displayMenu() {
+void displayMenu() {                      // hàm hiển thị menu
     system("cls");
     displayHeader();
     cout << "\n\t\t1. Them thuyen moi";
@@ -344,7 +583,7 @@ void displayMenu() {
     cout << "\n\t\tNhap lua chon (1-10): ";
 }
 
-string generateTicketCode(const vector<RentalRecord>& rentalHistory) {
+string generateTicketCode(const vector<RentalRecord>& rentalHistory) {        // hàm random tên vé, xem nó như một loại KEY để hủy vé
     srand(static_cast<unsigned int>(time(0)));
     const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     string ticket;
@@ -376,18 +615,18 @@ class BoatManager {
     };
 
 public:
-    BoatManager() {
+    BoatManager() {            // constructor, dùng để tải dữ liệu ban đầu ở file lên
         loadBoatsFromFile();
         loadRentalHistoryFromFile();
     }
 
-    ~BoatManager() {
+    ~BoatManager() {            // destructor, hàm hủy dùng để tránh bị tràn bộ nhớ
         for (Boat* boat : boats) {
             delete boat;
         }
     }
 
-    void addBoat() {
+    void addBoat() {            // hàm thêm thuyền,
         system("cls");
         displayHeader();
         char type;
