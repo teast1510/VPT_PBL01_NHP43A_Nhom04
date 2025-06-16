@@ -516,6 +516,15 @@ public:
         displayHeader();
         char type;
         do {
+            cout << "\n\t\tVui Long nhap mat khau may chu de xoa: ";
+            string pass;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            getline(cin, pass);
+            if(pass!=password){
+                cout << "\n\t\tMat khau may chu sai. Xoa khong thanh cong!";
+                pressEnterToContinue();
+                return;
+            } 
             cout << "\t\tNhap loai thuyen( S cho size Nho, L cho size Lon): ";
             cin >> type;
             type = toupper(type);
