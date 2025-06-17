@@ -36,6 +36,18 @@ struct Shift {
     Shift() : startHour(0), endHour(0), pricePerHour(0), seatsBooked(0) {}
 };
 
+// Hàm hỗ trợ kiểm tra số hợp lệ
+bool isValidNumber(const string& str) {
+    try {
+        size_t pos;
+        stof(str, &pos);
+        return pos == str.length();
+    }
+    catch (...) {
+        return false;
+    }
+}
+
 
 // Lớp Boat
 class Boat {
@@ -60,7 +72,7 @@ public:
     void setType(char t) { type = t; }
 
     virtual void createBoat() = 0; // hàm tạo thuyền
-  
+
 
     void setAvailability(bool available) { isAvailable = available; }       // hàm đặt giá trị hoạt động 
     bool getAvailability() const { return isAvailable; }                    // hàm trả về giá trị hoạt động
@@ -76,14 +88,14 @@ public:
         if (shiftIndex >= 0 && shiftIndex < numShifts) {
             shifts[shiftIndex].seatsBooked += seatsBooked;
             incrementRentalCount();
-            bool allShiftsFull = true;
+            bool hasShiftEmpty = false;
             for (const auto& shift : shifts) {
                 if (shift.seatsBooked < seats) {
-                    allShiftsFull = false;
+                    hasShiftEmpty = true;
                     break;
                 }
             }
-            setAvailability(!allShiftsFull);
+            setAvailability(hasShiftEmpty);
         }
     }
 
@@ -93,14 +105,14 @@ public:
             if (shifts[shiftIndex].seatsBooked < 0) {
                 shifts[shiftIndex].seatsBooked = 0;
             }
-            bool allShiftsFull = true;
+            bool hasShiftEmpty = false;
             for (const auto& shift : shifts) {
                 if (shift.seatsBooked < seats) {
-                    allShiftsFull = false;
+                    hasShiftEmpty = true;
                     break;
                 }
             }
-            setAvailability(!allShiftsFull);
+            setAvailability(hasShiftEmpty);
 
         }
     }
@@ -145,8 +157,8 @@ public:
         cout << "\n\t\t======================================";
         cout << "\n\t\t           TAO THUYEN NHO    ";
         cout << "\n\t\t======================================\n";
-        
-        do{
+
+        do {
             cout << "\t\tNhap ID thuyen ( Vi du: B001): ";
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             getline(cin, boatID);
@@ -162,12 +174,12 @@ public:
                 cout << "\t\tLoi. Ten thuyen khong duoc de trong.\n";
             }
         } while (boatName.empty());
-        
+
         string input;
         do {
             cout << "\t\tNhap trong luong cua thuyen (tan, toi da 50): ";
             cin >> input;
-            if (!isValidNumber(input) || stof(input) <= 0 || stof(input) >= 50) {
+            if (!isValidNumber(input) || stof(input) <= 0 || stof(input) > 50) {
                 cout << "\t\tLoi. Trong luong cua thuyen phai la so duong va nho hon 50 tan.\n";
             }
             else {
@@ -270,8 +282,8 @@ public:
         cout << "\t\tSo ca trong ngay: " << numShifts << "\n";
         for (int i = 0; i < numShifts; i++) {
             cout << "\t\tCa " << i + 1 << ": " << shifts[i].startHour << "h-"
-                << shifts[i].endHour << "h, Gia: VND" << shifts[i].pricePerHour
-                << "/gio, so ghe da dat: " << shifts[i].seatsBooked << "\n";
+                << shifts[i].endHour << "h, Gia: " << shifts[i].pricePerHour
+                << " VND/gio, so ghe da dat: " << shifts[i].seatsBooked << "\n";
         }
         cout << "\t\tSo lan da thue: " << rentalCount << "\n";
     }
@@ -318,9 +330,9 @@ public:
         } while (true);
 
         do {
-            cout << "\t\tNhap so ghe (toi thieu 100): ";
+            cout << "\t\tNhap so ghe (toi thieu 101): ";
             cin >> input;
-            if (!isValidNumber(input) || stof(input) >= 100) {
+            if (!isValidNumber(input) || stof(input) < 100) {
                 cout << "\t\tLoi. So ghe phai la so duong va lon 100.\n";
             }
             else {
@@ -411,8 +423,8 @@ public:
         cout << "\t\tSố ca trong ngay: " << numShifts << "\n";
         for (int i = 0; i < numShifts; i++) {
             cout << "\t\tCa " << i + 1 << ": " << shifts[i].startHour << "h-"
-                << shifts[i].endHour << "h, Gia: VND" << shifts[i].pricePerHour
-                << "/gio, so ghe da dat: " << shifts[i].seatsBooked << "\n";
+                << shifts[i].endHour << "h, Gia: " << shifts[i].pricePerHour
+                << " VND/gio, so ghe da dat: " << shifts[i].seatsBooked << "\n";
         }
         cout << "\t\tSo lan thue: " << rentalCount << "\n";
     }
@@ -475,17 +487,6 @@ string generateTicketCode(const vector<RentalRecord>& rentalHistory) {        //
     } while (!unique);
     return ticket;
 }
-// Hàm hỗ trợ kiểm tra số hợp lệ
-bool isValidNumber(const string& str) {
-    try {
-        size_t pos;
-        stof(str, &pos);
-        return pos == str.length();
-    }
-    catch (...) {
-        return false;
-    }
-}
 
 // Lớp BoatManager
 class BoatManager {
@@ -497,7 +498,7 @@ class BoatManager {
         {"Trai Cay", 30000.0}
     };
     const string password = "BKDaNang";
-    
+
 
 public:
     BoatManager() {            // constructor, dùng để tải dữ liệu ban đầu ở file lên
@@ -516,15 +517,19 @@ public:
         displayHeader();
         char type;
         do {
-            cout << "\n\t\tVui Long nhap mat khau may chu de xoa: ";
+            cout << "\n\t\tVui Long nhap mat khau may chu de them thuyen moi: ";
             string pass;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             getline(cin, pass);
-            if(pass!=password){
+            if (pass != password) {
                 cout << "\n\t\tMat khau may chu sai. Xoa khong thanh cong!";
                 pressEnterToContinue();
                 return;
-            } 
+            }
+            cout << "\n\t\tMat Khau may chu chinh xac. Mo khoa chuc nang them thuyen!";
+            pressEnterToContinue2();
+            system("cls");
+            displayHeader();
             cout << "\t\tNhap loai thuyen( S cho size Nho, L cho size Lon): ";
             cin >> type;
             type = toupper(type);
@@ -559,7 +564,7 @@ public:
                 return;
             }
         }
-        
+
         boats.push_back(boat);
         saveBoatsToFile();
         pressEnterToContinue();
@@ -573,11 +578,15 @@ public:
             string pass;
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             getline(cin, pass);
-            if(pass!=password){
+            if (pass != password) {
                 cout << "\n\t\tMat khau may chu sai. Xoa khong thanh cong!";
-                pressEnterToContinue();
+                pressEnterToContinue2();
                 return;
-            }           
+            }
+            cout << "\n\t\tMat Khau may chu chinh xac. Mo khoa chuc nang them thuyen!";
+            pressEnterToContinue2();
+            system("cls");
+            displayHeader();
             cout << "\n\t\tNhap phuong thuc muon tim thuyen de xoa: ";
             cout << "\n\t\t1. Tim theo ID cua thuyen ";
             cout << "\n\t\t2. Tim theo ten cua thuyen ";
@@ -613,6 +622,7 @@ public:
                     ++it;
                 }
                 if (!boat) {
+                    cout << "\n\t\tLoi! Khong tim thay ID thuyen can xoa.";
                     pressEnterToContinue2();
                     return;
                 }
@@ -726,8 +736,8 @@ public:
         const auto& shifts = boat->getShifts();
         for (int i = 0; i < boat->getNumShifts(); i++) {
             cout << "\t\tCa " << i + 1 << ": " << shifts[i].startHour << "h-"
-                << shifts[i].endHour << "h, Gia: VND" << shifts[i].pricePerHour
-                << "/gio, Ghe con trong: " << boat->getSeats() - shifts[i].seatsBooked << "\n";
+                << shifts[i].endHour << "h, Gia:" << shifts[i].pricePerHour
+                << " VND/gio, Ghe con trong: " << boat->getSeats() - shifts[i].seatsBooked << "\n";
         }
 
         string input;
@@ -755,7 +765,7 @@ public:
             else {
                 seats = stof(input);
                 float rentalCost = seats * shifts[shiftIndex].pricePerHour * (shifts[shiftIndex].endHour - shifts[shiftIndex].startHour);
-                cout << "\t\tChi phi thue: VND" << rentalCost << "\n";
+                cout << "\t\tChi phi thue:" << rentalCost << " VND\n";
                 break;
             }
         } while (true);
@@ -775,9 +785,9 @@ public:
         if (orderFood == 'y') {
             cout << "\t\tMenu:\n";
             for (size_t i = 0; i < foodMenu.size(); i++) {
-                cout << "\t\t" << i + 1 << ". " << foodMenu[i].name << " - VND" << foodMenu[i].price << "\n";
+                cout << "\t\t" << i + 1 << ". " << foodMenu[i].name<<" gia " << foodMenu[i].price << " VND\n";
             }
-            cout << "\t\tNhap so mon (1-" << foodMenu.size() << ")hoac 0 de ket thuc: ";
+            cout << "\t\tNhap so mon (1-" << foodMenu.size() << ") hoac 0 de ket thuc: ";
             int foodChoice;
             while (cin >> foodChoice && foodChoice != 0) {
                 if (foodChoice < 1 || foodChoice > static_cast<int>(foodMenu.size())) {
@@ -786,7 +796,7 @@ public:
                 else {
                     selectedFoodItems.push_back(foodMenu[foodChoice - 1]);
                     foodCost += foodMenu[foodChoice - 1].price;
-                    cout << "\t\tDa them " << foodMenu[foodChoice - 1].name << " (VND" << foodMenu[foodChoice - 1].price << ")\n";
+                    cout << "\t\tDa them " << foodMenu[foodChoice - 1].name << " (" << foodMenu[foodChoice - 1].price << " VND)\n";
                 }
                 cout << "\t\tChon mon tiep theo (1-" << foodMenu.size() << ") hoac khong de ket thuc: ";
             }
@@ -808,9 +818,9 @@ public:
         float totalCost = foodCost + seats * shifts[shiftIndex].pricePerHour * (shifts[shiftIndex].endHour - shifts[shiftIndex].startHour);
         cout << "\t\tMua ve thanh cong! Ma ve: " << record.ticketCode << "\n";
         if (foodCost > 0) {
-            cout << "\t\tChi phi cho an uong: VND" << foodCost << "\n";
+            cout << "\t\tChi phi cho an uong: " << foodCost << " VND\n";
         }
-        cout << "\t\tTong chi phi: VND" << totalCost << "\n";
+        cout << "\t\tTong chi phi: " << totalCost << " VND\n";
         pressEnterToContinue();
     }
 
@@ -823,7 +833,7 @@ public:
         getline(cin, ticketCode);
 
         auto it = find_if(rentalHistory.begin(), rentalHistory.end(),
-[&ticketCode](const RentalRecord& r) { return r.ticketCode == ticketCode && r.action == "RENT"; });
+            [&ticketCode](const RentalRecord& r) { return r.ticketCode == ticketCode && r.action == "RENT"; });
 
         if (it == rentalHistory.end()) {
             cout << "\t\tLoi. Ma ve khong ton tai hoac da bi huy.\n";
@@ -831,10 +841,9 @@ public:
             return;
         }
 
-        RentalRecord& record = *it;
         Boat* boat = nullptr;
         for (Boat* b : boats) {
-            if (b->getBoatID() == record.boatID) {
+            if (b->getBoatID() == it->boatID) {
                 boat = b;
                 break;
             }
@@ -842,18 +851,17 @@ public:
 
         if (!boat) {
             cout << "\t\tLoi. khong tim thay thuyen! \n";
-            pressEnterToContinue();
+            pressEnterToContinue2();
             return;
         }
 
-        RentalRecord cancelRecord = record;
+        RentalRecord cancelRecord = *it;
         cancelRecord.action = "CANCEL";
         rentalHistory.push_back(cancelRecord);
 
-        boat->cancelSeats(record.shiftIndex, record.seatsRented);
+        boat->cancelSeats(cancelRecord.shiftIndex, cancelRecord.seatsRented);
         saveRentalHistoryToFile();
         saveBoatsToFile();
-
         cout << "\t\tHuy thue thanh cong.\n";
         pressEnterToContinue();
     }
@@ -891,9 +899,9 @@ public:
                 if (!record.foodItems.empty()) {
                     cout << "\t\tMon an uong: ";
                     for (const auto& item : record.foodItems) {
-                        cout << item.name << " (VND" << item.price << "), ";
+                        cout << item.name << " (" << item.price <<  " VND), ";
                     }
-                    cout << "\n\t\tChi phi cho mon an: VND" << record.foodCost << "\n";
+                    cout << "\n\t\tChi phi cho mon an:" << record.foodCost << " VND\n";
                 }
                 cout << "\t\t-------------------\n";
             }
