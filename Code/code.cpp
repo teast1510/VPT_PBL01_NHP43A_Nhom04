@@ -571,30 +571,30 @@
             saveBoatsToFile();
             pressEnterToContinue();
         }
-        void deleteBoat() { 
+        void deleteBoat() {
+            system("cls");
+            displayHeader();
+            cout << "\n\t\tVui long nhap mat khau may chu de xoa: ";
+            string pass;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            getline(cin, pass);
+            if (pass != password) {
+                cout << "\n\t\tMat khau may chu sai. Xoa khong thanh cong!\n";
+                pressEnterToContinue();
+                return;
+            }
+            cout << "\n\t\tMat khau may chu chinh xac. Mo khoa chuc nang xoa thuyen!\n";
+            pressEnterToContinue();
             int choice;
             do {
-                system("cls");
-                displayHeader();
-                cout << "\n\t\tVui Long nhap mat khau may chu de xoa: ";
-                string pass;
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                getline(cin, pass);
-                if (pass != password) {
-                    cout << "\n\t\tMat khau may chu sai. Xoa khong thanh cong!";
-                    pressEnterToContinue2();
-                    return;
-                }
-                cout << "\n\t\tMat Khau may chu chinh xac. Mo khoa chuc nang them thuyen!";
-                pressEnterToContinue2();
                 system("cls");
                 displayHeader();
                 cout << "\n\t\tNhap phuong thuc muon tim thuyen de xoa: ";
                 cout << "\n\t\t1. Tim theo ID cua thuyen ";
                 cout << "\n\t\t2. Tim theo ten cua thuyen ";
-                cout << "\n\t\tNhan chon(1-2): ";
+                cout << "\n\t\tNhan chon (1-2): ";
                 string input;
-                cin >> input;
+                getline(cin, input); 
                 if (!isValidNumber(input)) {
                     cout << "\t\tLoi. Vui long nhap so.\n";
                     pressEnterToContinue();
@@ -607,87 +607,59 @@
                     continue;
                 }
 
+                Boat* boat = nullptr;
+                auto it = boats.begin();
+                string searchValue;
+
                 switch (choice) {
                 case 1: {
-                    string boatID;
                     cout << "\n\t\tNhap ID thuyen can xoa: ";
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                    getline(cin, boatID);
-                    Boat* boat = nullptr;
-
-                    auto it = boats.begin();
-                    for (Boat* b : boats) {
-                        if (b->getBoatID() == boatID) {
-                            boat = b;
-                            break;
-                        }
-                        ++it;
-                    }
-                    if (!boat) {
-                        cout << "\n\t\tLoi! Khong tim thay ID thuyen can xoa.";
-                        pressEnterToContinue2();
-                        return;
-                    }
-                    // Kiểm tra xem thuyền có bản ghi thuê không
-                    bool hasRental = false;
-                    for (const auto& record : rentalHistory) {
-                        if (record.boatID == boatID && record.action == "RENT") {
-                            hasRental = true;
+                    getline(cin, searchValue);
+                    for (auto iter = boats.begin(); iter != boats.end(); ++iter) {
+                        if ((*iter)->getBoatID() == searchValue) {
+                            boat = *iter;
+                            it = iter;
                             break;
                         }
                     }
-                    if (hasRental) {
-                        cout << "\t\tLoi. Thuyen dang co ban ghi thue, khong the xoa.\n";
-                        pressEnterToContinue();
-                        return;
-                    }
-                    boats.erase(it);
-                    delete boat;
-                    saveBoatsToFile();
-                    cout << "\t\tThuyen duoc xoa thanh cong.\n";
-                    pressEnterToContinue2();
-                    return;
+                    break;
                 }
                 case 2: {
-                    string nameboat;
                     cout << "\n\t\tNhap ten cua thuyen can xoa: ";
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                    getline(cin, nameboat);
-                    Boat* boat = nullptr;
-                    auto it = boats.begin();
-                    for (Boat* b : boats) {
-                        if (b->getBoatName() == nameboat) {
-                            boat = b;
-                            break;
-                        }
-                        ++it;
-                    }
-                    if (!boat) {
-                        cout << "\t\tLoi. Khong tim thay ten thuyen.\n";
-                        pressEnterToContinue2();
-                        return;
-                    }
-                    // Kiểm tra xem thuyền có bản ghi thuê không
-                    bool hasRental = false;
-                    for (const auto& record : rentalHistory) {
-                        if (record.boatID == boat->getBoatID() && record.action == "RENT") {
-                            hasRental = true;
+                    getline(cin, searchValue);
+                    for (auto iter = boats.begin(); iter != boats.end(); ++iter) {
+                        if ((*iter)->getBoatName() == searchValue) {
+                            boat = *iter;
+                            it = iter;
                             break;
                         }
                     }
-                    if (hasRental) {
-                        cout << "\t\tLoi. Thuyen dang co ban ghi thue, khong the xoa.\n";
-                        pressEnterToContinue();
-                        return;
-                    }
-                    boats.erase(it);
-                    delete boat;
-                    saveBoatsToFile();
-                    cout << "\t\tThuyen duoc xoa thanh cong.\n";
-                    pressEnterToContinue2();
+                    break;
+                }
+                }
+                if (!boat) {
+                    cout << "\t\tLoi. Khong tim thay thuyen.\n";
+                    pressEnterToContinue();
                     return;
                 }
+                bool hasRental =true;
+                for (const auto& record : rentalHistory) {
+                    if (record.boatID == boat->getBoatID() && record.action == "CANCEL") {
+                        hasRental = false;
+                        break;
+                    }
                 }
+                if (hasRental) {
+                    cout << "\t\tLoi. Thuyen dang co ban ghi thue, khong the xoa.\n";
+                    pressEnterToContinue();
+                    return;
+                }
+                boats.erase(it);
+                delete boat;
+                saveBoatsToFile();
+                cout << "\t\tThuyen duoc xoa thanh cong.\n";
+                pressEnterToContinue();
+                return;
             } while (true);
         }
 
